@@ -19,7 +19,11 @@ namespace NeuralNetwork
             CreateHiddenLayers();
             CreateOutputLayer();
         }
-
+        /// <summary>
+        /// Выисление выходных сигналов во всей нейросети
+        /// </summary>
+        /// <param name="inputSignals"></param>Входные сигналы
+        /// <returns></returns>
         public Neuron FeedForward(List<double> inputSignals)
         {
             SendSignalsToInputNeurons(inputSignals);
@@ -35,6 +39,9 @@ namespace NeuralNetwork
             }
         }
 
+        /// <summary>
+        /// Вычисление выходных сигналов послойно во всех скрытых слоях и выходном слое
+        /// </summary>
         private void FeedForwardAllLayersAfterInput()
         {
             //Перебор всех слоев
@@ -49,6 +56,10 @@ namespace NeuralNetwork
             }
         }
 
+        /// <summary>
+        /// Отправка входных сигнлов на входной слой нейронной сети
+        /// </summary>
+        /// <param name="inputSignals"></param>Входные сигналы
         private void SendSignalsToInputNeurons(List<double> inputSignals)
         {
             //Если количество входных сигналов и топологий сети соответствует
@@ -87,6 +98,9 @@ namespace NeuralNetwork
             Layers.Add(outputLayer);//Добавление выходного слоя в коллецию слоев нейронной сети
         }
 
+        /// <summary>
+        /// Создание скрытых слоев
+        /// </summary>
         private void CreateHiddenLayers()
         {
             //Добавление слоя скрытых нейронов в соответствии с топологией сети
@@ -104,13 +118,16 @@ namespace NeuralNetwork
             }
         }
 
+        /// <summary>
+        /// Создание входного слоя
+        /// </summary>
         private void CreateInputLayer()
         {
             //Добавление слоя входных нейронов в соответствии с топологией сети
             var inputNeurons =new List<Neuron>();
             for(int i = 0; i < Topology.InputCount; i++)        //
             {                                                   //Создание коллекции входных нейронов
-                var neuron = new Neuron(1, NeuronType.Input);   //Количестов входов входного нейрона всегда равен 1
+                var neuron = new Neuron(1, NeuronType.Input);   //Количество входов входного нейрона всегда равно 1
                 inputNeurons.Add(neuron);                       //
             }
             var inputLayer = new Layer(inputNeurons, NeuronType.Input);

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Windows.Forms;
 
 namespace NeuralNetwork
 {
@@ -17,30 +16,11 @@ namespace NeuralNetwork
         /// <param name="layers"></param>Количество нейронов в скрытых слоях
         public Topology(int inputCount, int outputCount, params int[] layers)
         {
-            Handler(inputCount, "Inputs", InputCount);
-            Handler(outputCount, "Outputs", OutputCount);
-            if (layers.Length > 0)
-            {
-                int[] layersChecked = default;
-                for (int i = 0; i < layers.Length; i++)
-                {
-                    Handler(layers[i], "Count neuron on layer No.{i}", layersChecked[i]);
-                }
-                HiddenLayers = new List<int>();
-                HiddenLayers.AddRange(layersChecked);
-            }
-        }
-        void Handler(int value, string name, int field)
-        {
-            if (value > 0)
-            {
-                field = value;
-            }
-            else
-            {
-                MessageBox.Show($"{name} most be more than 0", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-
+            //TODO: добавить проверку вводимых данных
+            InputCount = inputCount;
+            OutputCount = outputCount;
+            HiddenLayers = new List<int>();
+            HiddenLayers.AddRange(layers);
         }
     }
 }

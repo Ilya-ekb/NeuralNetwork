@@ -25,6 +25,8 @@ namespace NeuralNetwork
                 {
                     MessageBox.Show($"Layer contains zero neurons.\n" +
                         $"Incorrect collection '{neurons}' neuron by index {i} type in constructor parameters", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    ok = false;
+                    break;
                 }
                 else
                 {
