@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace NeuralNetwork
@@ -29,14 +26,34 @@ namespace NeuralNetwork
             {
                 MessageBox.Show(e.Message, "Error input", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-
-            //Добаление весов
-            Weights = new List<double>();
-
-            for (int i = 0; i < inputCount; i++)
+            try
             {
-                Weights.Add(1);
+                if (inputCount >= 1)
+                {
+                    //Добаление весов
+                    Weights = new List<double>();
+
+                    for (int i = 0; i < inputCount; i++)
+                    {
+                        Weights.Add(1);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("The number of inputs can't be less than 1", "Error input", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
+            catch(InvalidCastException e)
+            {
+                MessageBox.Show(e.Message, "Error input", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        public Neuron(Neuron neuron)
+        {
+            Weights = neuron.Weights;
+            NeuronType = neuron.NeuronType;
+            Output = neuron.Output;
         }
 
         /// <summary>
@@ -73,6 +90,15 @@ namespace NeuralNetwork
         double Sigmoid(double x)
         {
             return 1.0 / (1.0 + Math.Pow(Math.E, -x));
+        }
+
+        public void SetWeights(params double[] weights)
+        {
+            //TODO: удалить после добавления возможности обучения сети
+            for(int i = 0; i < weights.Length; i++)
+            {
+                Weights[i] = weights[i];
+            }
         }
 
         /// <summary>
