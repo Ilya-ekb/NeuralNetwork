@@ -8,7 +8,8 @@ namespace NeuralNetwork
     {
         // TODO: Перенести NeuronType в класс Layer из класса Neuron
         public List<Neuron> Neurons { get; } //Коллекция нейронов слоя
-        public int Count => Neurons?.Count ?? 0; //Количество нейронов в слое
+        public int NeuronCount => Neurons?.Count ?? 0; //Количество нейронов в слое
+        public NeuronType Type { get; }
 
         /// <summary>
         /// Создание слоя нейронов
@@ -37,6 +38,7 @@ namespace NeuralNetwork
             if (ok)
             {
                 Neurons = neurons;
+                Type = type;
             }
             else
             {
@@ -57,6 +59,11 @@ namespace NeuralNetwork
             }
             return result;
             //TODO: реализовать через yeild
+        }
+
+        public override string ToString()
+        {
+            return Type.ToString();
         }
     }
 }

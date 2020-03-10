@@ -19,25 +19,6 @@ namespace NeuralNetwork
             CreateHiddenLayers();
             CreateOutputLayer();
         }
-        /// <summary>
-        /// Выисление выходных сигналов во всей нейросети
-        /// </summary>
-        /// <param name="inputSignals"></param>Входные сигналы
-        /// <returns></returns>
-        public Neuron FeedForward(List<double> inputSignals)
-        {
-            SendSignalsToInputNeurons(inputSignals);
-            FeedForwardAllLayersAfterInput();
-
-            if (Topology.OutputCount == 1)
-            {
-                return Layers.Last().Neurons[0];//если выходное значение одно - выводим
-            }
-            else
-            {
-                return Layers.Last().Neurons.OrderByDescending(n => n.Output).First(); //Сортируем значения Output выходного нейрона по убыванию и выводим самое большое
-            }
-        }
 
         /// <summary>
         /// Вычисление выходных сигналов послойно во всех скрытых слоях и выходном слое
@@ -57,15 +38,90 @@ namespace NeuralNetwork
         }
 
         /// <summary>
+        /// Выисление выходных сигналов во всей нейросети
+        /// </summary>
+        /// <param name="inputSignals"></param>Входные сигналы
+        /// <returns></returns>
+        public Neuron FeedForward(params double[] inputSignals)
+        {
+            SendSignalsToInputNeurons(inputSignals);
+            FeedForwardAllLayersAfterInput();
+
+            if (Topology.OutputCount == 1)
+            {
+                return Layers.Last().Neurons[0];//если выходное значение одно - выводим
+            }
+            else
+            {
+                return Layers.Last().Neurons.OrderByDescending(n => n.Output).First(); //Сортируем значения Output выходного нейрона по убыванию и выводим самое большое
+            }
+        }
+
+        /// <summary>
+        /// Метод обратного распространенния ошибки 
+        /// </summary>
+        /// <param name="expected"></param>Ожидаемое значение
+        /// <param name="inputs"></param>Входные значения
+        /// <returns></returns>
+        private double BackPropagationOfError(double expected, params double[] inputs)
+        {
+            var actual = FeedForward(inputs).Output;
+
+            var difference = actual - expected;
+
+            foreach(var neuron in Layers.Last().Neurons)
+            {
+                neuron.Learn(difference, Topology.LearninRate);
+            }
+
+            for(int j = Layers.Count - 2; j >= 0; j--)
+            {
+                var layer = Layers[j];
+                var previousLayer = Layers[j + 1];
+
+                for(int i = 0; i < layer.NeuronCount; i++)
+                {
+                    var neuron = layer.Neurons[i];
+
+                    for(int k = 0; k < previousLayer.NeuronCount; k++)
+                    {
+                        var previousNeuron = previousLayer.Neurons[k];
+                        var error = previousNeuron.Weights[i] * previousNeuron.Delta;
+                        neuron.Learn(error, Topology.LearninRate);
+                    }
+                }
+            }
+
+            var result = difference * difference;
+            return result;
+        }
+
+        public double Learn(List<Tuple<double, double[]>> dataset, int epoch)
+        {
+            var error = 0.0;
+
+            for (int i = 0; i < epoch; i++)
+            {
+                foreach (var data in dataset)
+                {
+                    error += BackPropagationOfError(data.Item1, data.Item2);
+                }
+            }
+
+            var result = error / epoch;
+            return result;
+        }
+
+        /// <summary>
         /// Отправка входных сигнлов на входной слой нейронной сети
         /// </summary>
         /// <param name="inputSignals"></param>Входные сигналы
-        private void SendSignalsToInputNeurons(List<double> inputSignals)
+        private void SendSignalsToInputNeurons(params double[] inputSignals)
         {
             //Если количество входных сигналов и топологий сети соответствует
-            if (inputSignals.Count == Topology.InputCount)
+            if (inputSignals.Length == Topology.InputCount)
             {
-                for (int i = 0; i < inputSignals.Count; i++)
+                for (int i = 0; i < inputSignals.Length; i++)
                 {
                     var signal = new List<double>() { inputSignals[i] };//Получаем значение входного сигнала
                     var neuron = Layers[0].Neurons[i]; //Получаем нейрон во входном слое
@@ -76,7 +132,7 @@ namespace NeuralNetwork
             else
             {
                 MessageBox.Show("Number of input singals and the neural network topology do not match."                         //
-                    + $"Number of input signals: {inputSignals.Count}\nNeural network topology inputs: {Topology.InputCount}",  //Обработка исключения
+                    + $"Number of input signals: {inputSignals.Length}\nNeural network topology inputs: {Topology.InputCount}",  //Обработка исключения
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);                                                       //
             }
         }
@@ -91,7 +147,7 @@ namespace NeuralNetwork
             var lastLayer = Layers.Last();                                  //Ссылка на предыдущий слой
             for (int i = 0; i < Topology.OutputCount; i++)                  //
             {                                                               //Создание коллекции выходных нейронов
-                var neuron = new Neuron(lastLayer.Count, NeuronType.Output);//Количество входов выходных нейронов равно количеству нейронов на предыдущем слое
+                var neuron = new Neuron(lastLayer.NeuronCount, NeuronType.Output);//Количество входов выходных нейронов равно количеству нейронов на предыдущем слое
                 outputNeurons.Add(neuron);                                  //
             }
             var outputLayer = new Layer(outputNeurons, NeuronType.Output);
@@ -110,7 +166,7 @@ namespace NeuralNetwork
                 var lastLayer = Layers.Last();                                  //Ссылка на предыдущий слой
                 for (int i = 0; i < Topology.HiddenLayers[j]; i++)              //Внутренний цикл в соответствии с количеством нейронов в слое
                 {                                                               //Создание коллекции выходных нейронов
-                    var neuron = new Neuron(lastLayer.Count);                   //Количество входов скрытых нейронов равно количеству нейронов на предыдущем слое
+                    var neuron = new Neuron(lastLayer.NeuronCount);                   //Количество входов скрытых нейронов равно количеству нейронов на предыдущем слое
                     hiddenNeurons.Add(neuron);                                  //
                 }
                 var hiddenLayer = new Layer(hiddenNeurons);
