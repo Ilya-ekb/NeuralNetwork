@@ -10,6 +10,10 @@ namespace NeuralNetwork
         public Topology Topology { get; }//Топология нейросети
         public List<Layer> Layers { get; }//Количество слоев сети
 
+        /// <summary>
+        /// Новая нейроная сеть
+        /// </summary>
+        /// <param name="topology"></param>Приянтая топология сети
         public NeuralNetwork(Topology topology)
         {
             Topology = topology;
@@ -65,37 +69,45 @@ namespace NeuralNetwork
         /// <returns></returns>
         private double BackPropagationOfError(double expected, params double[] inputs)
         {
-            var actual = FeedForward(inputs).Output;
+            var actual = FeedForward(inputs).Output;//Выходное значение нейронной сети
 
-            var difference = actual - expected;
+            var difference = actual - expected;//Ошибка между ожидаемым и фактическим значением
 
+            //Обучение нейронов выходного слоя
             foreach(var neuron in Layers.Last().Neurons)
             {
                 neuron.Learn(difference, Topology.LearninRate);
             }
 
-            for(int j = Layers.Count - 2; j >= 0; j--)
+            //Обучение нейронов остальных слоев
+            for(int j = Layers.Count - 2; j >= 0; j--)//Получение всех слоев кроме выходного в обратном направлении
             {
-                var layer = Layers[j];
-                var previousLayer = Layers[j + 1];
+                var layer = Layers[j];//текущий слой
+                var previousLayer = Layers[j + 1];//Предыдущий, по направлению движения, слой 
 
-                for(int i = 0; i < layer.NeuronCount; i++)
+                for (int i = 0; i < layer.NeuronCount; i++)//Получение нейронов в текущем слое
                 {
-                    var neuron = layer.Neurons[i];
+                    var neuron = layer.Neurons[i];//Текущий нейрон
 
-                    for(int k = 0; k < previousLayer.NeuronCount; k++)
+                    for(int k = 0; k < previousLayer.NeuronCount; k++)//Получение нейронов в предыдущем, по направлению движения, слое
                     {
-                        var previousNeuron = previousLayer.Neurons[k];
-                        var error = previousNeuron.Weights[i] * previousNeuron.Delta;
-                        neuron.Learn(error, Topology.LearninRate);
+                        var previousNeuron = previousLayer.Neurons[k];//Текущий нейрон предыдущего слоя
+                        var error = previousNeuron.Weights[i] * previousNeuron.Delta;//Вычисление ошибки для текущего нейрона  
+                        neuron.Learn(error, Topology.LearninRate); //Обучение нейрона
                     }
                 }
             }
 
-            var result = difference * difference;
+            var result = difference * difference; //Получение квадратичной ошибки
             return result;
         }
 
+        /// <summary>
+        /// Обучение нейроной сети
+        /// </summary>
+        /// <param name="dataset"></param> 
+        /// <param name="epoch"></param>Количество эпох обучения
+        /// <returns></returns>
         public double Learn(List<Tuple<double, double[]>> dataset, int epoch)
         {
             var error = 0.0;
@@ -104,7 +116,7 @@ namespace NeuralNetwork
             {
                 foreach (var data in dataset)
                 {
-                    error += BackPropagationOfError(data.Item1, data.Item2);
+                    error += BackPropagationOfError(data.Item1, data.Item2);//вычисление суммы разностей методом обратного растарнеиения ошибки
                 }
             }
 

@@ -49,11 +49,16 @@ namespace NeuralNetwork
             }
         }
 
+        /// <summary>
+        /// Задание случайных значений веса для нейрона, при первоначальном создании
+        /// </summary>
+        /// <param name="inputCount"></param>Колмчество входных сигналов нейрона
         private void InitWeghtsRandomValue(int inputCount)
         {
             var random = new Random();
             for (int i = 0; i < inputCount; i++)
             {
+                //Если нейрон входной, то его вес - 1
                 if (NeuronType == NeuronType.Input)
                 {
                     Weights.Add(1);
@@ -84,6 +89,7 @@ namespace NeuralNetwork
                 {
                     sum += inputs[i] * Weights[i];
                 }
+                //Если нейрон входной, то сигмоид не вычисляется
                 if (NeuronType != NeuronType.Input)
                 {
                     Output = Sigmoid(sum);
@@ -112,29 +118,41 @@ namespace NeuralNetwork
             return 1.0 / (1.0 + Math.Pow(Math.E, -x));
         }
 
+        /// <summary>
+        /// Производная от сигмоидной функиции
+        /// </summary>
+        /// <param name="x"></param>Входящее число 
+        /// <returns></returns>
         double SigmoidDx(double x)
         {
             var sigmoid = Sigmoid(x);
             return sigmoid / (1 - sigmoid);
         }
 
+        /// <summary>
+        /// Обучение нейрона
+        /// </summary>
+        /// <param name="error"></param> Значение ошибки для данного нейрона
+        /// <param name="learningRate"></param>Коэффициент обчения сети: чем больше, тем быстрее процесс обучения и ниже точность и наоборот, чем меньше значение, тем медленее обучение и выше точность
         public void Learn(double error, double learningRate)
         {
+            //Если нейроны входного слоя - не расчитывается
             if(NeuronType == NeuronType.Input)
             {
                 return;
             }
 
-            Delta = error * SigmoidDx(Output);
-            for (int i = 0; i < Weights.Count; i++)
-            {
-                var weight = Weights[i];
-                var input = Inputs[i];
-
-                var newWeight = weight - input * Delta * learningRate;
-                Weights[i] = newWeight;
+            Delta = error * SigmoidDx(Output); //Вычисление дельты
+            for (int i = 0; i < Weights.Count; i++)                     //  
+            {                                                           //
+                var weight = Weights[i];                                //
+                var input = Inputs[i];                                  //Переопределение весов нейронов
+                                                                            
+                var newWeight = weight - input * Delta * learningRate;  //
+                Weights[i] = newWeight;                                 //
             }
         }
+
         /// <summary>
         /// Вывод значения вычислений нейрона на экран
         /// </summary>
