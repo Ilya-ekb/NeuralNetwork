@@ -65,7 +65,7 @@ namespace NeuralNetwork
         /// Метод обратного распространенния ошибки 
         /// </summary>
         /// <param name="expected"></param>Ожидаемое значение
-        /// <param name="inputs"></param>Входные значения
+        /// <param name="inputs"></param>Входные данные
         /// <returns></returns>
         private double BackPropagationOfError(double expected, params double[] inputs)
         {
@@ -74,13 +74,13 @@ namespace NeuralNetwork
             var difference = actual - expected;//Ошибка между ожидаемым и фактическим значением
 
             //Обучение нейронов выходного слоя
-            foreach(var neuron in Layers.Last().Neurons)
+            foreach (var neuron in Layers.Last().Neurons)
             {
                 neuron.Learn(difference, Topology.LearninRate);
             }
 
             //Обучение нейронов остальных слоев
-            for(int j = Layers.Count - 2; j >= 0; j--)//Получение всех слоев кроме выходного в обратном направлении
+            for (int j = Layers.Count - 2; j >= 0; j--)//Получение всех слоев кроме выходного в обратном направлении
             {
                 var layer = Layers[j];//текущий слой
                 var previousLayer = Layers[j + 1];//Предыдущий, по направлению движения, слой 
@@ -89,7 +89,7 @@ namespace NeuralNetwork
                 {
                     var neuron = layer.Neurons[i];//Текущий нейрон
 
-                    for(int k = 0; k < previousLayer.NeuronCount; k++)//Получение нейронов в предыдущем, по направлению движения, слое
+                    for (int k = 0; k < previousLayer.NeuronCount; k++)//Получение нейронов в предыдущем, по направлению движения, слое
                     {
                         var previousNeuron = previousLayer.Neurons[k];//Текущий нейрон предыдущего слоя
                         var error = previousNeuron.Weights[i] * previousNeuron.Delta;//Вычисление ошибки для текущего нейрона  
@@ -105,24 +105,143 @@ namespace NeuralNetwork
         /// <summary>
         /// Обучение нейроной сети
         /// </summary>
-        /// <param name="dataset"></param> 
+        /// <param name="dataset"></param> Входной двумерный массив данных
         /// <param name="epoch"></param>Количество эпох обучения
         /// <returns></returns>
-        public double Learn(List<Tuple<double, double[]>> dataset, int epoch)
+        public double Learn(double[] expected, double[,] dataset, int epoch)
         {
             var error = 0.0;
-
             for (int i = 0; i < epoch; i++)
             {
-                foreach (var data in dataset)
+
+                for (int j = 0; j < expected.Length; j++)
                 {
-                    error += BackPropagationOfError(data.Item1, data.Item2);//вычисление суммы разностей методом обратного растарнеиения ошибки
+                    //var dataForLearning = Normalization(dataset); //Нормализация данных перед обчением
+                    var output = expected[j];//Получение массива ожидаемых результатов
+                    var inputs = GetRow(dataset, j);//Получение строки текущего набора данных для передачи на входные нейроны
+
+                    //вычисление суммы разностей методом обратного распространения ошибки
+                    error += BackPropagationOfError(output, inputs);
                 }
             }
-
             var result = error / epoch;
             return result;
         }
+
+        /// <summary>
+        /// Получение строки из двумерного массива
+        /// </summary>
+        /// <param name="inputs"></param>
+        /// <param name="row"></param>
+        /// <returns></returns>
+        public static double[] GetRow(double[,] inputs, int row)
+        {
+            var column = inputs.GetLength(1);
+            var result = new double[column];
+            for (int i = 0; i < column; i++)
+            {
+                result[i] = inputs[row, i];
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Масштабирование входных данных
+        /// </summary>
+        /// <param name="inputs"></param> двумерный массив данных
+        /// <returns></returns>
+        private double[,] Scalling(double[,] inputs)
+        {
+            var result = new double[inputs.GetLength(0), inputs.GetLength(1)];
+
+            for (int column = 0; column < inputs.GetLength(1); column++)
+            {
+                var min = inputs[0, column];
+                var max = inputs[0, column];
+                for (int row = 1; row < inputs.GetLength(0); row++)
+                {
+                    var item = inputs[row, column];
+
+                    if (item < min)
+                    {
+                        min = item;
+                    }
+                    if (item > max)
+                    {
+                        max = item;
+                    }
+                }
+
+                var divider = max - min;
+                for (int row = 1; row < inputs.GetLength(0); row++)
+                {
+                    result[row, column] = (inputs[row, column] - min) / divider;
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Нормализация входных данных
+        /// </summary>
+        /// <param name="inputs"></param>Входные данные
+        /// <returns></returns>
+        private double[,] Normalization(double[,] inputs)
+        {
+            var result = new double[inputs.GetLength(0), inputs.GetLength(1)];
+
+            for (int column = 0; column < inputs.GetLength(1); column++)
+            {
+                var average = Average(inputs, column);//Вычиление среднего арифметического значения для нейрона
+
+                var standDev = StandardDeviation(inputs, column, average);//Среднеквадратичное отклонение для нейрона
+
+                //Вычисление нормализованного значения для нейрона
+                for (int row = 0; row < inputs.GetLength(0); row++)//Вычисление нормализованного значения
+                {
+                    result[row, column] = (inputs[row, column] - average) / standDev;
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Среднеквадратичное отклонение
+        /// </summary>
+        /// <param name="inputs"></param> Двумерный массив данных [row,column]
+        /// <param name="column"></param> Колонка в массиве данных
+        /// <param name="average"></param> Среднее арифетическое значений колонки
+        private double StandardDeviation(double[,] inputs, int column, double average)
+        {
+            double sum = 0.0;
+            for (int row = 0; row < inputs.GetLength(0); row++)
+            {
+                var dividerPow = Math.Pow(inputs[row, column] - average, 2);
+                sum += dividerPow;
+            }
+            var standardDeviation = Math.Sqrt(sum / inputs.GetLength(0));
+            return standardDeviation;
+        }
+
+        /// <summary>
+        /// Вычисление среднего арифметического значения
+        /// </summary>
+        /// <param name="inputs"></param>Двумерный массив [row, column]
+        /// <param name="column"></param>Колонка массива
+        /// <returns></returns>
+        private double Average(double[,] inputs, int column)
+        {
+            var sum = 0.0;
+            for (int row = 0; row < inputs.GetLength(0); row++)
+            {
+                sum += inputs[row, column];
+            }
+
+            var average = sum / inputs.GetLength(0);
+            return average;
+        }
+
 
         /// <summary>
         /// Отправка входных сигнлов на входной слой нейронной сети
@@ -192,8 +311,8 @@ namespace NeuralNetwork
         private void CreateInputLayer()
         {
             //Добавление слоя входных нейронов в соответствии с топологией сети
-            var inputNeurons =new List<Neuron>();
-            for(int i = 0; i < Topology.InputCount; i++)        //
+            var inputNeurons = new List<Neuron>();
+            for (int i = 0; i < Topology.InputCount; i++)        //
             {                                                   //Создание коллекции входных нейронов
                 var neuron = new Neuron(1, NeuronType.Input);   //Количество входов входного нейрона всегда равно 1
                 inputNeurons.Add(neuron);                       //
