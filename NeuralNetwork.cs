@@ -110,15 +110,16 @@ namespace NeuralNetwork
         /// <returns></returns>
         public double Learn(double[] expected, double[,] dataset, int epoch)
         {
+            //var dataForLearning = Normalization(dataset);
+            var dataForLearning = Scalling(dataset);
             var error = 0.0;
             for (int i = 0; i < epoch; i++)
             {
 
                 for (int j = 0; j < expected.Length; j++)
                 {
-                    //var dataForLearning = Normalization(dataset); //Нормализация данных перед обчением
                     var output = expected[j];//Получение массива ожидаемых результатов
-                    var inputs = GetRow(dataset, j);//Получение строки текущего набора данных для передачи на входные нейроны
+                    var inputs = GetRow(dataForLearning, j);//Получение строки текущего набора данных для передачи на входные нейроны
 
                     //вычисление суммы разностей методом обратного распространения ошибки
                     error += BackPropagationOfError(output, inputs);
