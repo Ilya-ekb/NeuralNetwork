@@ -89,6 +89,7 @@ namespace NeuralNetwork
                 {
                     var neuron = layer.Neurons[i];//Текущий нейрон
 
+                    //TODO: test it. How delta count?
                     for (int k = 0; k < previousLayer.NeuronCount; k++)//Получение нейронов в предыдущем, по направлению движения, слое
                     {
                         var previousNeuron = previousLayer.Neurons[k];//Текущий нейрон предыдущего слоя
@@ -283,7 +284,7 @@ namespace NeuralNetwork
                 outputNeurons.Add(neuron);                                  //
             }
             var outputLayer = new Layer(outputNeurons, NeuronType.Output);
-            Layers.Add(outputLayer);//Добавление выходного слоя в коллецию слоев нейронной сети
+            Layers.Add(outputLayer);                                        //Добавление выходного слоя в коллецию слоев нейронной сети
         }
 
         /// <summary>
@@ -298,7 +299,7 @@ namespace NeuralNetwork
                 var lastLayer = Layers.Last();                                  //Ссылка на предыдущий слой
                 for (int i = 0; i < Topology.HiddenLayers[j]; i++)              //Внутренний цикл в соответствии с количеством нейронов в слое
                 {                                                               //Создание коллекции выходных нейронов
-                    var neuron = new Neuron(lastLayer.NeuronCount);                   //Количество входов скрытых нейронов равно количеству нейронов на предыдущем слое
+                    var neuron = new Neuron(lastLayer.NeuronCount);             //Количество входов скрытых нейронов равно количеству нейронов на предыдущем слое
                     hiddenNeurons.Add(neuron);                                  //
                 }
                 var hiddenLayer = new Layer(hiddenNeurons);
@@ -313,7 +314,7 @@ namespace NeuralNetwork
         {
             //Добавление слоя входных нейронов в соответствии с топологией сети
             var inputNeurons = new List<Neuron>();
-            for (int i = 0; i < Topology.InputCount; i++)        //
+            for (int i = 0; i < Topology.InputCount; i++)       //
             {                                                   //Создание коллекции входных нейронов
                 var neuron = new Neuron(1, NeuronType.Input);   //Количество входов входного нейрона всегда равно 1
                 inputNeurons.Add(neuron);                       //

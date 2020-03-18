@@ -119,7 +119,7 @@ namespace NeuralNetwork
         }
 
         /// <summary>
-        /// Производная от сигмоидной функиции
+        /// Производная от сигмоидной функции
         /// </summary>
         /// <param name="x"></param>Входящее число 
         /// <returns></returns>
@@ -133,7 +133,7 @@ namespace NeuralNetwork
         /// Обучение нейрона
         /// </summary>
         /// <param name="error"></param> Значение ошибки для данного нейрона
-        /// <param name="learningRate"></param>Коэффициент обчения сети: чем больше, тем быстрее процесс обучения и ниже точность и наоборот, чем меньше значение, тем медленее обучение и выше точность
+        /// <param name="learningRate"></param>Коэффициент обучения сети: чем больше, тем быстрее процесс обучения и ниже точность, чем меньше значение, тем медленее обучение и выше точность
         public void Learn(double error, double learningRate)
         {
             //Если нейроны входного слоя - не расчитывается
@@ -147,7 +147,7 @@ namespace NeuralNetwork
             {                                                           //
                 var weight = Weights[i];                                //
                 var input = Inputs[i];                                  //Переопределение весов нейронов
-                                                                            
+                                                                        //    
                 var newWeight = weight - input * Delta * learningRate;  //
                 Weights[i] = newWeight;                                 //
             }
